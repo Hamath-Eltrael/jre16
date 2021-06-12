@@ -2,7 +2,7 @@
 # Contributor: Det <nimetonmaili g-mail>
 
 pkgbase=jdk
-pkgname=('jre' 'jdk')
+pkgname=('jre')
 pkgver=16.0.1
 _build=9
 _hash=7147401fd7354114ac51ef3e1328291f
@@ -89,49 +89,3 @@ package_jre() {
     ln -s "../../../share/licenses/${pkgname}" "${pkgdir}/${_jvmdir}/legal"
 }
 
-package_jdk() {
-    pkgdesc='Oracle Java Development Kit'
-    depends=('java-environment-common' "jre>=${_majver}" "jre<$((_majver + 1))" 'zlib' 'hicolor-icon-theme')
-    provides=("java-environment=${_majver}" "java-environment-jdk=${_majver}")
-    install=jdk.install
-    
-    cd "jdk-${pkgver}"
-    local _jvmdir="/usr/lib/jvm/java-${_majver}-${pkgname}"
-    
-    install -d -m755 "${pkgdir}/${_jvmdir}"
-    install -d -m755 "${pkgdir}/usr/share/licenses/${pkgname}"
-    
-    # bin
-    cp -a bin "${pkgdir}/${_jvmdir}"
-    rm "${pkgdir}/${_jvmdir}/bin/"{java,jpackage,jrunscript,keytool,rmid,rmiregistry}
-    
-    # libs
-    install -D -m644 lib/ct.sym       -t "${pkgdir}/${_jvmdir}/lib"
-    install -D -m644 lib/libattach.so -t "${pkgdir}/${_jvmdir}/lib"
-    install -D -m644 lib/libsaproc.so -t "${pkgdir}/${_jvmdir}/lib"
-    cp -a lib/jfr "${pkgdir}/${_jvmdir}/lib"
-    
-    cp -a include "${pkgdir}/${_jvmdir}"
-    cp -a jmods   "${pkgdir}/${_jvmdir}"
-    
-    install -D -m644 lib/src.zip -t "${pkgdir}/${_jvmdir}/lib"
-    
-    # desktop and icons
-    install -D -m644 "${srcdir}/java.desktop"     "${pkgdir}/usr/share/applications/java-java-jdk.desktop"
-    install -D -m644 "${srcdir}/jconsole.desktop" "${pkgdir}/usr/share/applications/jconsole-java-jdk.desktop"
-    install -D -m644 "${srcdir}/jshell.desktop"   "${pkgdir}/usr/share/applications/jshell-java-jdk.desktop"
-    install -D -m644 "${srcdir}/java_16.png" "${pkgdir}/usr/share/icons/hicolor/16x16/apps/java-jdk.png"
-    install -D -m644 "${srcdir}/java_48.png" "${pkgdir}/usr/share/icons/hicolor/48x48/apps/java-jdk.png"
-    
-    # man pages
-    local _file
-    while read -r -d '' _file
-    do
-        install -D -m644 "$_file" "${pkgdir}/usr/share/${_file%.1}-jdk${_majver}.1"
-    done < <(find man/man1 -type f -print0)
-    rm "${pkgdir}/usr/share/man/man1/"{java,jpackage,jrunscript,keytool,rmid,rmiregistry}-jdk"${_majver}".1
-    
-    # legal/licenses
-    cp -a legal/* "${pkgdir}/usr/share/licenses/${pkgname}"
-    ln -s "$pkgname" "${pkgdir}/usr/share/licenses/java-${pkgname}"
-}
